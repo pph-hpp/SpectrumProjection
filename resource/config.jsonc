@@ -1,0 +1,106 @@
+// This is a config sample for mgfpj
+
+{
+  "ForwardProjectionConfig":{
+    "Materials": ["Bone", "Water"],
+    "MaterialPath":{
+        "Bone":{
+          "MaterialType": "Bone",
+          "InputDir": "resource/img/img_bone",
+          "OutputDir": "resource/sgm/sgm_bone",
+
+          // all the files in the input directory, use regular expression
+          "InputFilesFilter": "b_.*.raw",
+          // output file name (prefix, replace)
+          "OutputFilePrefix": "",
+          // replace substring in input file name
+          "OutputFileReplace": [ "b_", "sgmb_" ]
+        },
+        "Water":{
+          "MaterialType": "Water",
+          "InputDir": "resource/img/img_water",
+          "OutputDir": "resource/sgm/sgm_water",
+
+          "InputFilesFilter": "w_.*.raw",
+          "OutputFilePrefix": "",
+          "OutputFileReplace": [ "w_", "sgmw_" ]
+        }
+    },
+    
+
+    /*********************************************************
+    * image parameters
+    *********************************************************/
+    // image dimension (integer)
+    "ImageDimension": 512,
+    /* pixel size or image size, just use one of them */
+    // image pixel size [mm]
+    "PixelSize": 0.25,
+
+
+    /*********************************************************
+    * geometry and detector parameters
+    *********************************************************/
+    // source to isocenter distance [mm]
+    "SourceIsocenterDistance": 720,
+    // source to detector distance [mm]
+    "SourceDetectorDistance": 1050,
+    // number of detector elements
+    "DetectorElementCount": 1500,
+    // number of views for reconstruction
+    "Views": 1000,
+    // the physical size of detector element size [mm]
+    "DetectorElementSize": 0.25,
+
+    /*********************************************************
+    * parameters by default
+    *********************************************************/
+    // number of slices in each image file
+    "SliceCount": 1,
+    // start angle (positive counterclockwise) [degree]
+    "StartAngle": 0,
+    // oversample sinogram by increasing the number of detector elements by the factor of number below
+    "OversampleSize": 1,
+      // the position (coordinate) of detector center [mm]
+    "DetectorOffcenter": 0,
+      // (OPTIONAL) Whether the cone beam recon is needed
+    // in case of "false", all other items related to cone beam recon will be null
+    "ConeBeam": false
+  },
+  
+  "MutiEnergyProcessConfig":{
+    "Materials": ["Bone", "Water"],
+    "MaterialPath":{
+        "Bone":{
+          "MaterialType": "Bone",
+          "InputDir": "resource/sgm/sgm_bone",
+          // all the files in the input directory, use regular expression
+          "InputFilesFilter": "sgmb_.*.raw",
+          "CoefficientPath": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/bone.txt",
+          "Density": 1.92,
+          "OutputFileReplace": [ "b_", "" ]
+        },
+        "Water":{
+          "MaterialType": "Water",
+          "InputDir": "resource/sgm/sgm_water",
+          "InputFilesFilter": "sgmw_.*.raw",
+          "CoefficientPath": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/water.txt",
+          "Density": 1.0
+        }
+    },
+    "SpectrumPath": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/80kvp.txt",
+  
+    "outputHighDir": "resource/sinogram/sinogramLow",
+    "outputLowDir": "resource/sinogram/sinogramHigh",
+  
+    "sgmWidth": 1500,
+    "sgmHeight": 1000,
+
+    "startEnergy": 10,
+    "endEnergy": 140,
+
+    "insertNoise": false,
+    "Dose": 1e5
+  }
+  
+}

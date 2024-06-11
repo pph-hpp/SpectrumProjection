@@ -1,0 +1,24 @@
+// This is a config sample for mgfpj
+
+{
+  /*********************************************************
+	* input and output directory and files
+	*********************************************************/
+  	"outputWaterDir": "E:/pyprogram/3base/deepLesionBoneWater/sgm/water",
+	"outputBoneDir": "E:/pyprogram/3base/deepLesionBoneWater/sgm/bone",
+
+	"lowFilter": "sgm_*.raw",
+	"highFilter": "sgm_*.raw",
+
+	"inputHighDir": "E:/pyprogram/3base/sinogram/120kvp",
+	"inputLowDir": "E:/pyprogram/3base/sinogram/80kvp",
+
+
+	"sgmWidth": 1000,
+	"sgmHeight": 1000,
+	"energyNum": 131,
+
+	"OutputFileReplaceBone": [ "sgm_", "sgmb_" ],
+	"OutputFileReplaceWater": [ "sgm_", "sgmw_" ],
+
+}

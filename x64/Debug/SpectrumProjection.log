@@ -1,0 +1,57 @@
+﻿  Compiling CUDA source file src\SpectralProjection\mutiEnergyProcess.cpp...
+  Compiling CUDA source file src\SpectralProjection\DeCompose.cu...
+  
+  E:\CS\muti_energy\muti-energy-ray-casting>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "D:\CS\vs2019\install\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64" -x cu   -ID:\CS\vs2019\include\eigen -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\include" -I"E:\src\vcpkg\installed\x64-windows\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\include"  -G   --keep-dir x64\Debug  -maxrregcount=0  --machine 64 --compile -cudart static  -g  -D_DEBUG -D_CONSOLE -D_UNICODE -DUNICODE -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc142.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\mutiEnergyProcess.cpp.obj "E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\mutiEnergyProcess.cpp" 
+  
+  E:\CS\muti_energy\muti-energy-ray-casting>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "D:\CS\vs2019\install\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64" -x cu   -ID:\CS\vs2019\include\eigen -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\include" -I"E:\src\vcpkg\installed\x64-windows\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\include"  -G   --keep-dir x64\Debug  -maxrregcount=0  --machine 64 --compile -cudart static  -g  -D_DEBUG -D_CONSOLE -D_UNICODE -DUNICODE -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc142.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\DeCompose.cu.obj "E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\DeCompose.cu" 
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\DeCompose.cu(17): warning : variable "index" was declared but never referenced
+  
+  The contents of <filesystem> are available only with C++17 or later.
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\mutiEnergyProcess.cpp(220): warning : missing return statement at end of non-void function "mutiEnergyProcess::SpectralPhotonCounting"
+  
+  DeCompose.cu
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\DeCompose.cu(395): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
+  E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\DeCompose.cu(395): note: 请考虑在格式字符串中使用“%zd”
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\mutiEnergyProcess.cpp(220): warning : missing return statement at end of non-void function "mutiEnergyProcess::SpectralPhotonCounting"
+  
+  mutiEnergyProcess.cpp
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\../config.h(55): warning C4305: “初始化”: 从“double”到“float”截断
+  The contents of <filesystem> are available only with C++17 or later.
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\mutiEnergyProcess.cpp(93): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\mutiEnergyProcess.cpp(220): warning C4715: “mutiEnergyProcess::SpectralPhotonCounting”: 不是所有的控件路径都返回值
+  cudaFunction.cpp
+  function.cpp
+  main.cpp
+E:\CS\muti_energy\muti-energy-ray-casting\src\config.h(55,16): warning C4305: “初始化”: 从“double”到“float”截断
+  mutiEnergyProjection.cpp
+E:\CS\muti_energy\muti-energy-ray-casting\src\config.h(55,16): warning C4305: “初始化”: 从“double”到“float”截断
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(473,11): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(484,12): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(484,12): message : 请考虑在格式字符串中使用“%zd”
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(498,11): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(510,12): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(510,12): message : 请考虑在格式字符串中使用“%zd”
+  lightSource.cpp
+E:\CS\muti_energy\muti-energy-ray-casting\src\config.h(55,16): warning C4305: “初始化”: 从“double”到“float”截断
+  param.cpp
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\param.cpp(39,12): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\param.cpp(40,12): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\param.cpp(101,24): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+E:\CS\muti_energy\muti-energy-ray-casting\src\SpectralProjection\param.cpp(102,24): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+  源.cpp
+  正在生成代码...
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(413): warning C4715: “mutiEnergyProjection::do_forward_projection”: 不是所有的控件路径都返回值
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(421): warning C4715: “mutiEnergyProjection::do_forward_projection”: 不是所有的控件路径都返回值
+E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(438): warning C4715: “mutiEnergyProjection::do_energy_process”: 不是所有的控件路径都返回值
+    正在创建库 E:\CS\muti_energy\muti-energy-ray-casting\x64\Debug\SpectrumProjection.lib 和对象 E:\CS\muti_energy\muti-energy-ray-casting\x64\Debug\SpectrumProjection.exp
+  SpectrumProjection.vcxproj -> E:\CS\muti_energy\muti-energy-ray-casting\x64\Debug\SpectrumProjection.exe
+  'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
+  或批处理文件。
