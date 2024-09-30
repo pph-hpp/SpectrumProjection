@@ -28,11 +28,12 @@ private:
 	int m_energy_num;
 	std::unordered_map<std::string, float> allSpectrum;
 
-	std::unordered_map<MaterialType, float*>u_materials;
+	float* coefficient = nullptr;
+	std::unordered_map<MaterialType, float*>coef_materials;
+	
 	float* spectrum = nullptr;
 	std::unordered_map<std::string, float*>spectrums;
 
-	std::unordered_map<MaterialType, float*>u_materials_cpu;
 	float* SpCpu = nullptr;
 	TestClass* testclassCpu;
 	TestClass* testclass;
@@ -66,7 +67,7 @@ public:
 	~mutiEnergyProcess();
 	void readMateriasCoefficient(std::vector<MaterialType>materials, std::unordered_map<MaterialType, std::string>paths);
 	void readSpectrum(std::unordered_map<std::string, std::string>filenames);
-	void sgmToSinogram(std::string energy, std::vector<MaterialType>materials,
+	void sgmToSinogram(int e_idx, std::vector<MaterialType>materials,
 		std::unordered_map<MaterialType, float*>sgm_materials, float* sinogram_high);
 
 	void InitSgm();
@@ -74,8 +75,8 @@ public:
 	void test();
 	void Init();
 	void MallocData();
-	bool SpectralPhotonCounting(std::string energy, std::vector<MaterialType>use_list,
-		std::unordered_map<MaterialType, float*>sgm_materials, float* sinogram);
+	bool SpectralPhotonCounting(int e_idx, std::vector<MaterialType>use_list,
+		std::unordered_map<MaterialType, float*>sgm_materials, float* sinogram, int offset, cudaStream_t stream);
 
 };
 

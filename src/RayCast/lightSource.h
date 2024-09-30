@@ -1,5 +1,6 @@
 #pragma once
 #include "../config.h"
+#include "cuda_runtime.h"
 
 class lightSource
 {
@@ -26,7 +27,7 @@ public:
 	void InitParam();
 
 	// Forward projection, using bilinear interpolation
-	void ForwardProjectionBilinear(float *image, float *sgm);
+	void ForwardProjectionBilinear(float *image, float *sgm, cudaStream_t stream);
 
 
 };

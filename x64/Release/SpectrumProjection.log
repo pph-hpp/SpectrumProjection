@@ -1,13 +1,56 @@
-﻿  mutiEnergyProjection.cpp
-E:\CS\muti_energy\muti-energy-ray-casting\src\config.h(55,16): warning C4305: “初始化”: 从“double”到“float”截断
-E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(473,11): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”
-E:\CS\muti_energy\muti-energy-ray-casting\src\mutiEnergyProjection.cpp(497,11): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“std::basic_string<char,std::char_traits<char>,std::allocator<char>>”
-    正在创建库 E:\CS\muti_energy\muti-energy-ray-casting\x64\Release\SpectrumProjection.lib 和对象 E:\CS\muti_energy\muti-energy-ray-casting\x64\Release\SpectrumProjection.exp
+﻿  Compiling CUDA source file src\RayCast\ray.cu...
+  
+  E:\CS\muti_energy\SpectrumProjection>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.5\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "D:\CS\vs2019\install\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64" -x cu   -ID:\CS\vs2019\include\eigen -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.5\include" -I"E:\src\vcpkg\installed\x64-windows\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.5\include"     --keep-dir x64\Release  -maxrregcount=0   --machine 64 --compile -cudart static    -DNDEBUG -D_CONSOLE -D_UNICODE -DUNICODE -Xcompiler "/EHsc /W3 /nologo /Od /FS   /MD " -Xcompiler "/Fdx64\Release\vc142.pdb" -o E:\CS\muti_energy\SpectrumProjection\x64\Release\ray.cu.obj "E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu" 
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(446): warning #20091-D: a __device__ variable "imageObj" cannot be directly read in a host function
+    	ForwardProjectionBilinear_texture << <grid, block, (config.detEltCount + config.views)*sizeof(float) >> > (imageObj, sinogram, u, v, beta, config.imgDim, config.sliceCount, \
+    	                                                                                                           ^
+  
+  Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+  
+  The contents of <filesystem> are available only with C++17 or later.
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(149): warning #177-D: variable "v1" was declared but never referenced
+    		float v1, v2;
+    		      ^
+  
+  Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+  
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(149): warning #177-D: variable "v2" was declared but never referenced
+    		float v1, v2;
+    		          ^
+  
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(308): warning #177-D: variable "wx" was declared but never referenced
+    		float wx, wy, wz;
+    		      ^
+  
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(308): warning #177-D: variable "wy" was declared but never referenced
+    		float wx, wy, wz;
+    		          ^
+  
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(308): warning #177-D: variable "wz" was declared but never referenced
+    		float wx, wy, wz;
+    		              ^
+  
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(309): warning #177-D: variable "v1" was declared but never referenced
+    		float v1, v2;
+    		      ^
+  
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\ray.cu(309): warning #177-D: variable "v2" was declared but never referenced
+    		float v1, v2;
+    		          ^
+  
+  ray.cu
+  tmpxft_000010c4_00000000-7_ray.cudafe1.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+E:\CS\muti_energy\SpectrumProjection\src\RayCast\../config.h(50): warning C4305: “初始化”: 从“double”到“float”截断
+    正在创建库 E:\CS\muti_energy\SpectrumProjection\x64\Release\SpectrumProjection.lib 和对象 E:\CS\muti_energy\SpectrumProjection\x64\Release\SpectrumProjection.exp
+LINK : warning LNK4098: 默认库“LIBCMT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
   正在生成代码
-  1 of 2617 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    5 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+E:\CS\muti_energy\SpectrumProjection\src\mutiEnergyProjection.cpp(421): warning C4715: “mutiEnergyProjection::do_forward_projection”: 不是所有的控件路径都返回值
+E:\CS\muti_energy\SpectrumProjection\src\mutiEnergyProjection.cpp(413): warning C4715: “mutiEnergyProjection::do_forward_projection”: 不是所有的控件路径都返回值
+E:\CS\muti_energy\SpectrumProjection\src\mutiEnergyProjection.cpp(431): warning C4715: “mutiEnergyProjection::do_energy_process”: 不是所有的控件路径都返回值
+  All 2726 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
-  SpectrumProjection.vcxproj -> E:\CS\muti_energy\muti-energy-ray-casting\x64\Release\SpectrumProjection.exe
+  SpectrumProjection.vcxproj -> E:\CS\muti_energy\SpectrumProjection\x64\Release\SpectrumProjection.exe
   'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
   或批处理文件。

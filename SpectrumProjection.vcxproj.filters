@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="源.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\RayCast\lightSource.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SpectralProjection\param.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\mutiEnergyProjection.cpp">
@@ -36,6 +30,9 @@
     <ClCompile Include="src\function.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\DeCompose\param.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RayCast\lightSource.h">
@@ -44,13 +41,7 @@
     <ClInclude Include="src\SpectralProjection\noise.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\SpectralProjection\param.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\SpectralProjection\test.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SpectralProjection\DeCompose.cuh">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\SpectralProjection\mutiEnergyProcess.h">
@@ -68,10 +59,16 @@
     <ClInclude Include="src\cudaFunction.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\SpectralProjection\MEProcess.cuh">
+    <ClInclude Include="src\function.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\function.h">
+    <ClInclude Include="src\DeCompose\DeCompose.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DeCompose\param.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SpectralProjection\MEProcess.cuh">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -85,10 +82,10 @@
     <CudaCompile Include="src\SpectralProjection\mutiEnergyProcess.cpp">
       <Filter>源文件</Filter>
     </CudaCompile>
-    <CudaCompile Include="src\SpectralProjection\DeCompose.cu">
+    <CudaCompile Include="src\SpectralProjection\MEProcess.cu">
       <Filter>源文件</Filter>
     </CudaCompile>
-    <CudaCompile Include="src\SpectralProjection\MEProcess.cu">
+    <CudaCompile Include="src\DeCompose\DeCompose.cu">
       <Filter>源文件</Filter>
     </CudaCompile>
   </ItemGroup>

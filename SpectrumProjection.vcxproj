@@ -54,7 +54,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.3.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.5.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -123,12 +123,16 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>D:\CS\vs2019\include\eigen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;cudadevrt.lib</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -140,36 +144,42 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>D:\CS\vs2019\include\eigen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Disabled</Optimization>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;cudadevrt.lib</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\cudaFunction.cpp" />
+    <ClCompile Include="src\DeCompose\param.cpp" />
     <ClCompile Include="src\function.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mutiEnergyProjection.cpp" />
     <ClCompile Include="src\RayCast\lightSource.cpp" />
+    <CudaCompile Include="src\DeCompose\DeCompose.cu" />
     <CudaCompile Include="src\SpectralProjection\MEProcess.cu">
       <FileType>Document</FileType>
     </CudaCompile>
-    <ClCompile Include="src\SpectralProjection\param.cpp" />
-    <ClCompile Include="源.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\cudaFunction.hpp" />
+    <ClInclude Include="src\DeCompose\DeCompose.cuh" />
+    <ClInclude Include="src\DeCompose\param.h" />
     <ClInclude Include="src\function.h" />
     <ClInclude Include="src\mutiEnergyProjection.h" />
     <ClInclude Include="src\RayCast\lightSource.h" />
     <ClInclude Include="src\SpectralProjection\MEProcess.cuh" />
     <ClInclude Include="src\SpectralProjection\noise.h" />
-    <ClInclude Include="src\SpectralProjection\param.h" />
     <ClInclude Include="src\SpectralProjection\test.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,10 +187,6 @@
       <FileType>Document</FileType>
     </CudaCompile>
     <ClInclude Include="src\RayCast\ray.cuh" />
-    <CudaCompile Include="src\SpectralProjection\DeCompose.cu">
-      <FileType>Document</FileType>
-    </CudaCompile>
-    <ClInclude Include="src\SpectralProjection\DeCompose.cuh" />
     <CudaCompile Include="src\SpectralProjection\mutiEnergyProcess.cpp">
       <FileType>Document</FileType>
     </CudaCompile>
@@ -191,6 +197,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.3.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.5.targets" />
   </ImportGroup>
 </Project>

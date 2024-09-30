@@ -1,11 +1,24 @@
 #include "mutiEnergyProjection.h"
 #include "SpectralProjection/MEProcess.cuh"
-#include "cudaFunction.hpp"
+#include "omp.h"
 
-mutiEnergyProjection::mutiEnergyProjection(const char* config_path)
+#include <iostream>
+#include <fstream>
+
+
+
+mutiEnergyProjection::mutiEnergyProjection(const char* config_path, const cudaDeviceProp &prop)
 {
 	ReadConfigFile(config_path);
-	MallocData();
+	this->prop = prop;
+	if (this->m_use_stream) {
+		CreateStreams();
+		MallocStaticData();
+	}
+	else{
+		MallocData();
+	}
+	
 	m_light_process = new lightSource(m_FPConfig);
 	std::cout << "lightSource has been created" << std::endl;
 	m_energy_process = new mutiEnergyProcess(m_MEConfig);
@@ -52,6 +65,43 @@ mutiEnergyProjection::~mutiEnergyProjection()
 	if (m_energy_process)
 		delete m_energy_process;
 	m_energy_process = nullptr;
+
+	if (m_use_stream){
+		ClearStreams();
+	}
+}
+
+void mutiEnergyProjection::CreateStreams() {
+	size_t freeMem, totalMem;
+	cudaMemGetInfo(&freeMem, &totalMem);
+
+	int baseStreams = 4;
+	int maxStreams = prop.multiProcessorCount * 3;
+
+	m_num_streams = baseStreams;
+	if (freeMem > (totalMem / 2)) {
+		m_num_streams = min(maxStreams, baseStreams * 2);
+	}
+
+	std::cout << "Creating " << m_num_streams << " CUDA streams." << std::endl;
+
+	m_streams = new cudaStream_t[m_num_streams];
+	for (int i = 0; i < m_num_streams; ++i) {
+		cudaStreamCreate(&m_streams[i]);
+	}
+
+}
+
+void mutiEnergyProjection::ClearStreams() {
+	if (!m_streams){
+		std::cout << "ClearStreams Error: no streams\n";
+		return;
+	}
+	for (int i = 0; i < m_num_streams; ++i) {
+		cudaStreamDestroy(m_streams[i]);
+	}
+	delete[] m_streams;
+	m_streams = nullptr;
 }
 
 void mutiEnergyProjection::ReadImageFile(const char* filename) {
@@ -74,7 +124,7 @@ void mutiEnergyProjection::SaveSinogram(const char* filename, float *data, float
 	fclose(fp);
 }
 
-void mutiEnergyProjection::ReadConfigFile(const char* filename, ConfigType type) {
+void mutiEnergyProjection::ReadConfigFile(const char* filename) {
 	namespace fs = std::filesystem;
 	namespace js = rapidjson;
 
@@ -283,7 +333,7 @@ void mutiEnergyProjection::ReadConfigFile(const char* filename, ConfigType type)
 		}
 		
 	}
-	std::cout << "参数读取完成" << std::endl;
+	std::cout << "Parameter reading completed" << std::endl;
 }
 
 
@@ -335,36 +385,59 @@ std::vector<std::string> mutiEnergyProjection::GetInputFileNames(const std::stri
 }
 
 
-void mutiEnergyProjection::readData(const char* filepath, float* data_cpu, float* data_gpu, int length) {
-	FILE* fp = fopen(filepath, "rb");
-	if (fp == NULL){
-		fprintf(stderr, "Cannot open file %s!\n", filepath);
-		exit(3);
+void mutiEnergyProjection::readData(const char* filepath, float* data_cpu, float* data_gpu, int length, cudaStream_t stream) {
+	{
+		//std::lock_guard<std::mutex> lock(fileMutex); // 确保线程安全
+		std::ifstream file(filepath, std::ios::binary); // 以二进制模式打开文件
+
+		if (!file) {
+			std::cerr << "Could not open file: " << filepath << std::endl;
+			exit(3);
+		}
+
+		// 读取数据
+		file.read(reinterpret_cast<char*>(data_cpu), length * sizeof(float));
+
+		if (!file) {
+			std::cerr << "Error reading file: " << filepath << std::endl;
+		}
+
+		file.close(); // 关闭文件
+		if (stream){
+			CHECK_CUDA_ERROR(cudaMemcpyAsync(data_gpu, data_cpu, sizeof(float) * length, cudaMemcpyHostToDevice, stream));
+		}
+		else{
+			CHECK_CUDA_ERROR(cudaMemcpy(data_gpu, data_cpu, sizeof(float) * length, cudaMemcpyHostToDevice));
+		}
 	}
-	fread(data_cpu, sizeof(float), length, fp);
-	cudaMemcpy(data_gpu, data_cpu, sizeof(float) * length, cudaMemcpyHostToDevice);
-	fclose(fp);
 }
 
-void mutiEnergyProjection::writeData(const char* filepath, float* data_gpu, float* data_cpu) {
-#pragma warning (disable : 4996)
-	FILE* fp = NULL;
-	fp = fopen(filepath, "wb");
+void mutiEnergyProjection::writeData(const char* filepath, float* data_gpu, float* data_cpu, int length, cudaStream_t stream)
+{
+	{
+		//std::lock_guard<std::mutex> lock(fileMutex); // 确保线程安全
+		if (m_use_stream) {
+			CHECK_CUDA_ERROR(cudaMemcpyAsync(data_cpu, data_gpu, sizeof(float) * length, cudaMemcpyDeviceToHost, stream));
+		}
+		else {
+			cudaMemcpy(data_cpu, data_gpu, sizeof(float) * length, cudaMemcpyDeviceToHost);
+		}
+		std::ofstream file(filepath, std::ios::binary); // 以二进制模式打开文件
 
-	if (fp == NULL) {
-		fprintf(stderr, "Cannot save to file %s!\n", filepath);
-		exit(4);
+		if (!file) {
+			std::cerr << "Could not open file: " << filepath << std::endl;
+			exit(3);
+		}
+
+		// 写入数据
+		file.write(reinterpret_cast<char*>(data_cpu), length * sizeof(float));
+
+		if (!file) {
+			std::cerr << "Error writing to file: " << filepath << std::endl;
+		}
+
+		file.close(); // 关闭文件
 	}
-	//cudaMemcpy(data_cpu, data, sizeof(float) * config.sgmWidth * config.sgmHeight, cudaMemcpyDeviceToHost);
-	if (m_process_type == ProcessType::ForwardPorjedction) {
-		cudaMemcpy(data_cpu, data_gpu, sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views, cudaMemcpyDeviceToHost);
-		fwrite(data_cpu, sizeof(float), m_FPConfig.detEltCount * m_FPConfig.views, fp);
-	}
-	else{
-		cudaMemcpy(data_cpu, data_gpu, sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight, cudaMemcpyDeviceToHost);
-		fwrite(data_cpu, sizeof(float), m_MEConfig.sgmWidth * m_MEConfig.sgmHeight, fp);
-	}
-	fclose(fp);
 }
 
 
@@ -398,43 +471,79 @@ void mutiEnergyProjection::MallocData() {
 		cudaMalloc((void**)&sinogram, sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight);
 		sinogram_cpu = new float[m_MEConfig.sgmWidth * m_MEConfig.sgmHeight];
 	}
+}
 
+void mutiEnergyProjection::MallocStaticData() {
+	if (m_process_type == ProcessType::ForwardPorjedction) {
+		for (auto material : m_material_list) {
+			//img_materials_cpu[material] = new float[m_FPConfig.imgDim * m_FPConfig.imgDim];
+			img_materials_cpu[material] = new float[m_FPConfig.imgDim * m_FPConfig.imgDim * m_num_streams];
+			sgm_materials_cpu[material] = new float[m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams];
+			// 锁定内存
+			if (!MemoryAgent::LockMemory(sgm_materials_cpu[material], m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams)) {
+				exit(-1);
+			}
+
+			cudaMalloc((void**)&img_materials[material], sizeof(float) * m_FPConfig.imgDim * m_FPConfig.imgDim * m_num_streams);
+			cudaMalloc((void**)&sgm_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams);
+		}
+	}
+	else if (m_process_type == ProcessType::MEProcess) {
+		for (auto material : m_material_list) {
+			sgm_materials_cpu[material] = new float[m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams];
+			cudaMalloc((void**)&sgm_materials[material], sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams);
+		}
+		cudaMalloc((void**)&sinogram, sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams);
+		sinogram_cpu = new float[m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams];
+		if (MemoryAgent::LockMemory(sinogram_cpu, m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams)) {
+			exit(-1);
+		}
+	}
+	else {
+		for (auto material : m_material_list) {
+			img_materials_cpu[material] = new float[m_FPConfig.imgDim * m_FPConfig.imgDim];
+			sgm_materials_cpu[material] = new float[m_FPConfig.detEltCount * m_FPConfig.views];
+			if (!MemoryAgent::LockMemory(sgm_materials_cpu[material], m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams)) {
+				exit(-1);
+			}
+			cudaMalloc((void**)&img_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views);
+			cudaMalloc((void**)&sgm_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views);
+		}
+		cudaMalloc((void**)&sinogram, sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight);
+		sinogram_cpu = new float[m_MEConfig.sgmWidth * m_MEConfig.sgmHeight];
+		if (!MemoryAgent::LockMemory(sinogram_cpu, m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams)) {
+			exit(-1);
+		}
+	}
 }
 
 
-bool mutiEnergyProjection::do_forward_projection() {
+bool mutiEnergyProjection::do_forward_projection(int img_offset, int sgm_offset, cudaStream_t stream) {
 	if (m_light_process == nullptr){
 		printf("Forward Projection Error, Create lightSource first.\n");
 		return false;
 	}
 	for (auto material : m_material_list){
-		m_light_process->ForwardProjectionBilinear(img_materials[material], sgm_materials[material]);
+		m_light_process->ForwardProjectionBilinear(img_materials[material] + img_offset,
+			sgm_materials[material] + sgm_offset, stream);
 	}
 }
 
-bool mutiEnergyProjection::do_forward_projection(float *img, float *sgm) {
+bool mutiEnergyProjection::do_forward_projection(float *img, float *sgm, cudaStream_t stream) {
 	if (m_light_process == nullptr) {
 		printf("Forward Projection Error, Create lightSource first.\n");
 		return false;
 	}
-	m_light_process->ForwardProjectionBilinear(img, sgm);
+	m_light_process->ForwardProjectionBilinear(img, sgm, stream);
 }
 
-bool mutiEnergyProjection::do_energy_process(std::string energy) {
-	m_material_list, sgm_materials;
+bool mutiEnergyProjection::do_energy_process(int e_idx, int offset, cudaStream_t stream) {
 	if (m_energy_process == nullptr) {
 		printf("Muti-Energy Process Error, Create mutiEnergyProcess first.\n");
 		return false;
 	}
-	/*for (auto material : m_material_list){
-		if (!sgm_materials.count(material) || sgm_materials[material] == nullptr) {
-			printf("Memory Error, Malloc memory first.\n");
-			return false;
-		}
-	}*/
-	//read
-	m_energy_process->SpectralPhotonCounting(energy, m_material_list, sgm_materials, sinogram);
-	//write
+
+	m_energy_process->SpectralPhotonCounting(e_idx, m_material_list, sgm_materials, sinogram, offset, stream);
 }
 
 bool mutiEnergyProjection::process() {
@@ -452,14 +561,42 @@ bool mutiEnergyProjection::process() {
 			auto output_sgm_names = GetOutputFileNames(input_img_names, PathData.replace[item], PathData.prefix[item]);
 			sgm_material_names[item] = output_sgm_names;
 		}
+		auto imgSize = m_FPConfig.imgDim * m_FPConfig.imgDim;
+		auto sgmSize = m_FPConfig.detEltCount * m_FPConfig.views;
 		for (auto item : PathData.Materials) {
 			auto input_dir = PathData.FPInputImageMaterialDir[item];
 			auto output_dir = PathData.FPOutputSgmMaterialDir[item];
-			for (int i = 0; i < image_material_names[item].size(); i++) {
-				readData((input_dir + '/' + image_material_names[item][i]).c_str(), img_materials_cpu[item],
-					img_materials[item], m_FPConfig.imgDim * m_FPConfig.imgDim);
-				do_forward_projection(img_materials[item], sgm_materials[item]);
-				writeData((output_dir + '/' + sgm_material_names[item][i]).c_str(), sgm_materials[item], sgm_materials_cpu[item]);
+			if (m_use_stream) {
+				omp_set_num_threads(m_num_streams);
+				#pragma omp parallel
+				{
+				#pragma omp for
+					// 处理文件
+					for (int i = 0; i < image_material_names[item].size(); i ++) {
+						int streamIndex = i % m_num_streams; // 轮流使用流
+						auto img_offset = imgSize * streamIndex;
+						auto sgm_offset = sgmSize * streamIndex;
+
+						readData((input_dir + '/' + image_material_names[item][i]).c_str(), img_materials_cpu[item] + img_offset,
+							img_materials[item] + img_offset, imgSize, m_streams[streamIndex]);
+						do_forward_projection(img_materials[item] + img_offset, sgm_materials[item] + sgm_offset, m_streams[streamIndex]);
+						writeData((output_dir + '/' + sgm_material_names[item][i]).c_str(), sgm_materials[item] + sgm_offset,
+							sgm_materials_cpu[item] + sgm_offset, sgmSize, m_streams[streamIndex]);
+					}
+				}
+			}
+			else {
+				for (auto item : PathData.Materials) {
+					auto input_dir = PathData.FPInputImageMaterialDir[item];
+					auto output_dir = PathData.FPOutputSgmMaterialDir[item];
+					for (int i = 0; i < image_material_names[item].size(); i++) {
+						readData((input_dir + '/' + image_material_names[item][i]).c_str(), img_materials_cpu[item],
+							img_materials[item], imgSize, nullptr);
+						do_forward_projection(img_materials[item], sgm_materials[item], nullptr);
+						writeData((output_dir + '/' + sgm_material_names[item][i]).c_str(), sgm_materials[item],
+							sgm_materials_cpu[item], sgmSize, nullptr);
+					}
+				}
 			}
 		}
 	}
@@ -469,18 +606,49 @@ bool mutiEnergyProjection::process() {
 			material_names[item] = GetInputFileNames(m_MEConfig.MePath.MEInputSgmMaterialsDir[item].c_str(),
 				m_MEConfig.MePath.MEMaterialFilter[item].c_str());
 		}
-		for (auto energy : m_MEConfig.MePath.SpectrumEnergys){
-			printf("Start process energy: %s\n", energy);
+		auto sgmSize = m_MEConfig.sgmWidth * m_MEConfig.sgmHeight;
+		for (int spec_idx = 0; spec_idx < m_MEConfig.MePath.SpectrumEnergys.size(); spec_idx++) {
+			std::string energy = m_MEConfig.MePath.SpectrumEnergys[spec_idx];
+			printf("Start process energy: %s\n", energy.c_str());
 			std::vector<std::string>outputFileNames = GetOutputFileNames(material_names[m_MEConfig.MePath.materialToReplace],
 				m_MEConfig.MePath.outputFilesReplace, m_MEConfig.MePath.outputFilesNamePrefix[energy]);
 
 			auto dirs = m_MEConfig.MePath.MEInputSgmMaterialsDir;
-			for (size_t i = 0; i < outputFileNames.size(); i++) {
-				for (auto item : m_material_list) {
-					readData((dirs[item] + '/' + material_names[item][i]).c_str(), sgm_materials_cpu[item], sgm_materials[item], m_MEConfig.sgmWidth * m_MEConfig.sgmHeight);
+			if (m_use_stream){
+				omp_set_num_threads(m_num_streams);
+				#pragma omp parallel
+				{
+				#pragma omp for
+					for (int i = 0; i < outputFileNames.size(); i ++) {
+						printf("i = %d, threadIndex = %d\n", i, omp_get_thread_num());
+						int streamIndex = i % m_num_streams; // 轮流使用流
+						auto sgm_offset = sgmSize * streamIndex;
+						for (auto item : m_material_list) {
+							std::string name = dirs[item] + '/' + material_names[item][i];
+							readData(name.c_str(), sgm_materials_cpu[item] + sgm_offset,
+								sgm_materials[item] + sgm_offset, sgmSize, m_streams[streamIndex]);
+						}
+						timer.startCUDA();
+						do_energy_process(spec_idx, sgm_offset, m_streams[streamIndex]);
+						timer.stopCUDA();
+						std::cout << "\nCUDA Execution Time: " << timer.getElapsedTimeCUDA() << " milliseconds" << std::endl;
+						writeData((m_MEConfig.MePath.MEOutputDirs[energy] + '/' + outputFileNames[i]).c_str(),
+							sinogram + sgm_offset, sinogram_cpu + sgm_offset, sgmSize, m_streams[streamIndex]);
+					}
 				}
-				do_energy_process(energy);
-				writeData((m_MEConfig.MePath.MEOutputDirs[energy] + '/' + outputFileNames[i]).c_str(), sinogram, sinogram_cpu);
+			}
+			else{
+				for (size_t i = 0; i < outputFileNames.size(); i++) {
+					for (auto item : m_material_list) {
+						std::string name = dirs[item] + '/' + material_names[item][i];
+						readData((dirs[item] + '/' + material_names[item][i]).c_str(), sgm_materials_cpu[item], sgm_materials[item], sgmSize, nullptr);
+					}
+					timer.startCUDA();
+					do_energy_process(spec_idx, 0, nullptr);
+					timer.stopCUDA();
+					std::cout << "\nCUDA Execution Time: " << timer.getElapsedTimeCUDA() << " milliseconds" << std::endl;
+					writeData((m_MEConfig.MePath.MEOutputDirs[energy] + '/' + outputFileNames[i]).c_str(), sinogram, sinogram_cpu, sgmSize, nullptr);
+				}
 			}
 		}
 	}
@@ -492,20 +660,54 @@ bool mutiEnergyProjection::process() {
 			material_names[item] = GetInputFileNames(m_FPConfig.FpPath.FPInputImageMaterialDir[item].c_str(),
 				m_FPConfig.FpPath.MaterialFilter[item].c_str());
 		}
-
-		for (auto energy : m_MEConfig.MePath.SpectrumEnergys) {
-			printf("\nStart process energy: %s\n", energy);
+		auto imgSize = m_FPConfig.imgDim * m_FPConfig.imgDim;
+		auto sgmSize = m_MEConfig.sgmWidth * m_MEConfig.sgmHeight;
+		for (int spec_idx = 0; spec_idx < m_MEConfig.MePath.SpectrumEnergys.size(); spec_idx++) {
+			std::string energy = m_MEConfig.MePath.SpectrumEnergys[spec_idx];
+			printf("\nStart process energy: %s\n", energy.c_str());
 			std::vector<std::string>outputFileNames = GetOutputFileNames(material_names[m_MEConfig.MePath.materialToReplace],
 				m_MEConfig.MePath.outputFilesReplace, m_MEConfig.MePath.outputFilesNamePrefix[energy]);
 
 			auto dirs = m_FPConfig.FpPath.FPInputImageMaterialDir;
-			for (size_t i = 0; i < outputFileNames.size(); i++) {
-				for (auto item : m_material_list) {
-					readData((dirs[item] + '/' + material_names[item][i]).c_str(), img_materials_cpu[item], img_materials[item], m_FPConfig.imgDim * m_FPConfig.imgDim);
+			auto outputSize = outputFileNames.size();
+
+			if (m_use_stream){
+				omp_set_num_threads(m_num_streams);
+				#pragma omp parallel
+				{
+				#pragma omp for
+					//int thread_count = omp_get_num_threads();
+
+					for (int i = 0; i < outputSize; i ++) {
+						int streamIndex = i % m_num_streams; // 轮流使用流
+						auto img_offset = imgSize * streamIndex;
+						auto sgm_offset = sgmSize * streamIndex;
+
+						for (auto item : m_material_list) {
+							readData((dirs[item] + '/' + material_names[item][i]).c_str(),
+								img_materials_cpu[item] + img_offset, img_materials[item] + img_offset, imgSize, m_streams[streamIndex]);
+						}
+						timer.startCUDA();
+						do_forward_projection(img_offset, sgm_offset, m_streams[streamIndex]); // 确保核函数使用当前流
+						do_energy_process(spec_idx, sgm_offset, m_streams[streamIndex]); // 确保核函数使用当前流
+						timer.stopCUDA();
+						std::cout << "\nCUDA Execution Time: " << timer.getElapsedTimeCUDA() << " milliseconds" << std::endl;
+						writeData((m_MEConfig.MePath.MEOutputDirs[energy] + '/' + outputFileNames[i]).c_str(), sinogram + sgm_offset, sinogram_cpu + sgm_offset, sgmSize, m_streams[streamIndex]);
+					}
 				}
-				do_forward_projection();
-				do_energy_process(energy);
-				writeData((m_MEConfig.MePath.MEOutputDirs[energy] + '/' + outputFileNames[i]).c_str(), sinogram, sinogram_cpu);
+			}
+			else{
+				for (size_t i = 0; i < outputFileNames.size(); i++) {
+					for (auto item : m_material_list) {
+						readData((dirs[item] + '/' + material_names[item][i]).c_str(), img_materials_cpu[item], img_materials[item], imgSize, nullptr);
+					}
+					timer.startCUDA();
+					do_forward_projection(0, 0, nullptr);
+					do_energy_process(spec_idx, 0, nullptr);
+					timer.stopCUDA();
+					std::cout << "\nCUDA Execution Time: " << timer.getElapsedTimeCUDA() << " milliseconds" << std::endl;
+					writeData((m_MEConfig.MePath.MEOutputDirs[energy] + '/' + outputFileNames[i]).c_str(), sinogram, sinogram_cpu, sgmSize, nullptr);
+				}
 			}
 		}
 	}

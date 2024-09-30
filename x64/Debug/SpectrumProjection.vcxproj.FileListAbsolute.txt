@@ -1,2 +1,1 @@
-E:\CS\muti_energy\muti-energy-ray-casting\SpectrumProjection\x64\Debug\SpectrumProjection.exe
-E:\CS\muti_energy\muti-energy-ray-casting\x64\Debug\SpectrumProjection.exe
+E:\CS\muti_energy\SpectrumProjection\x64\Debug\SpectrumProjection.exe

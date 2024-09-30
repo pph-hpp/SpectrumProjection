@@ -12,11 +12,28 @@
 #endif
 //#include "device_launch_parameters.h"
 
+#define CHECK_CUDA_ERROR(err) {                           \
+    cudaError_t error = err;                             \
+    if (error != cudaSuccess) {                          \
+        std::cerr << "CUDA error: " << cudaGetErrorString(error) \
+                  << " in file " << __FILE__           \
+                  << " at line " << __LINE__ << std::endl; \
+        exit(error);                                     \
+    }                                                    \
+}
+
 class MemoryAgent {
 public:
 	static void FreeMemory(float*& p);
 
 	static void FreeMemoryCpu(float*& p);
+
+    static cudaDeviceProp getDeviceProperties();
+
+    static int LockMemory(float* data, int size);
+
+    static void GetWorkingSetSize();
+    static void SetWorkingSetSize(int minNum, int maxNum);  //MB
 };
 
 
@@ -52,6 +69,7 @@ public:
         cudaEventElapsedTime(&milliseconds, start_event, stop_event);
         return milliseconds;
     }
+
 #endif
 
 private:

@@ -2,7 +2,9 @@
 #include "RayCast/lightSource.h"
 #include "SpectralProjection/mutiEnergyProcess.h"
 #include "config.h"
+#include "cudaFunction.hpp"
 #include <filesystem>
+#include <mutex>
 
 enum ProcessType {
 	ForwardPorjedction,
@@ -25,17 +27,26 @@ private:
 	lightSource* m_light_process;
 	mutiEnergyProcess* m_energy_process;
 
-	ProcessType m_process_type = ProcessType::ForwardAndMEProcess;
+	ProcessType m_process_type = ProcessType::MEProcess;
+	Timer timer;
+	int m_num_streams = 0;
+	std::mutex fileMutex;
+
+	cudaStream_t* m_streams = nullptr;
+	void CreateStreams();
+	void ClearStreams();
 
 public:
+	bool m_use_stream = true;
+	cudaDeviceProp prop;
 	FPConfig m_FPConfig;
 	MEConfig m_MEConfig;
 
-	mutiEnergyProjection(const char* config_path);
+	mutiEnergyProjection(const char* config_path, const cudaDeviceProp &prop);
 	~mutiEnergyProjection();
 
 	// Read config file
-	void ReadConfigFile(const char* filename, ConfigType type = ConfigType::AllParam);
+	void ReadConfigFile(const char* filename);
 
 	void ReadImageFile(const char* filename);
 
@@ -48,14 +59,15 @@ public:
 	std::vector<std::string> GetInputFileNames(const std::string& dir,
 		const std::string& filter);
 
-	void readData(const char* filepath, float *data_cpu, float *data_gpu, int length);
-	void writeData(const char* filepath, float* data_gpu, float* data_cpu);
+	void readData(const char* filepath, float *data_cpu, float *data_gpu, int length, cudaStream_t stream);
+	void writeData(const char* filepath, float* data_gpu, float* data_cpu, int length, cudaStream_t stream);
 
 	void MallocData();
+	void MallocStaticData();
 
-	bool do_forward_projection();
-	bool do_forward_projection(float *img, float *sgm);
-	bool do_energy_process(std::string energy);
+	bool do_forward_projection(int img_offset, int sgm_offset, cudaStream_t stream);
+	bool do_forward_projection(float *img, float *sgm, cudaStream_t stream);
+	bool do_energy_process(int e_idx, int offset, cudaStream_t stream);
 	bool process();
 private:
 

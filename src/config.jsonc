@@ -14,7 +14,7 @@
           // output file name (prefix, replace)
           "OutputFilePrefix": "",
           // replace substring in input file name
-          "OutputFileReplace": [ "b_", "sgmb_" ]
+          "OutputFileReplace": [ "b_", "sgm_" ]
         },
         "Water":{
           "MaterialType": "Water",
@@ -23,7 +23,7 @@
 
           "InputFilesFilter": "w_.*.raw",
           "OutputFilePrefix": "",
-          "OutputFileReplace": [ "w_", "sgmw_" ]
+          "OutputFileReplace": [ "w_", "sgm_" ]
         }
     },
     
@@ -76,27 +76,27 @@
           "InputDir": "resource/sgm/sgm_bone",
           // all the files in the input directory, use regular expression
           "InputFilesFilter": "sgm_.*.raw",
-          "CoefficientPath": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/bone.txt",
+          "CoefficientPath": "resource/bone.txt",
           "Density": 1.92,
-          "OutputFileReplace": [ "b_", "" ]
+          "OutputFileReplace": [ "sgm_", "" ]
         },
         "Water":{
           "MaterialType": "Water",
           "InputDir": "resource/sgm/sgm_water",
           "InputFilesFilter": "sgm_.*.raw",
-          "CoefficientPath": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/water.txt",
+          "CoefficientPath": "resource/water.txt",
           "Density": 1.0
         }
     },
     "SpectrumPath":{
       "energy": ["80kvp", "120kvp"],
       "80kvp":{
-        "path": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/80kvp.txt",
+        "path": "resource/80kvp.txt",
         "FileNamesPrefix": "sgm_low",
         "outputHighDir": "resource/sinogram/sinogram_80kvp"
       },
       "120kvp":{
-        "path": "E:/CS/muti_energy/muti-energy-ray-casting/SpectrumProjection/resource/120kvp.txt",
+        "path": "resource/120kvp.txt",
         "FileNamesPrefix": "sgm_high",
         "outputHighDir": "resource/sinogram/sinogram_120kvp"
       }

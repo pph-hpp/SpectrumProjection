@@ -3,13 +3,18 @@
 #include <iostream>
 #include "mutiEnergyProjection.h"
 
+
 int main()
 {
 	
-	mutiEnergyProjection proj("src/config.jsonc");
-	std::cout << "创建完成" << std::endl;
+	cudaDeviceProp prop = MemoryAgent::getDeviceProperties();
+	MemoryAgent::SetWorkingSetSize(50, 200);
+	MemoryAgent::GetWorkingSetSize();
+
+	mutiEnergyProjection proj("src/config.jsonc", prop);
+	std::cout << "Creation completed" << std::endl;
 	proj.process();
-	std::cout << "执行完成" << std::endl;
+	std::cout << "Execution completed" << std::endl;
 	/*lightSource light;
 	std::string configPath = "config.jsonc";
 

@@ -7,11 +7,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
-enum ConfigType {
-	AllParam,
-	GeometricParam,
-	MutiProcessParam
-};
 
 enum MaterialType {
 	Bone = 0,
