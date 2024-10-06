@@ -4,7 +4,6 @@
 #include <io.h>
 #include "../cudaFunction.hpp"
 
-
 mutiEnergyProcess::mutiEnergyProcess(MEConfig config) {
 	this->config = config;
 	m_energy_num = config.endEnergy - config.startEnergy + 1;

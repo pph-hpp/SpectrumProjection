@@ -6,7 +6,6 @@
 #include <fstream>
 
 
-
 mutiEnergyProjection::mutiEnergyProjection(const char* config_path, const cudaDeviceProp &prop)
 {
 	ReadConfigFile(config_path);

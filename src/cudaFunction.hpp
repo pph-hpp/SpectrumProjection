@@ -6,7 +6,6 @@
 #define CUDA_ENABLED
 #endif // !CUDA_ENABLED
 
-
 #ifdef CUDA_ENABLED
 #include <cuda_runtime.h>
 #endif

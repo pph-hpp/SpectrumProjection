@@ -70,6 +70,5 @@ public:
 	bool do_energy_process(int e_idx, int offset, cudaStream_t stream);
 	bool process();
 private:
-
 };
 

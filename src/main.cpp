@@ -6,7 +6,6 @@
 
 int main()
 {
-	
 	cudaDeviceProp prop = MemoryAgent::getDeviceProperties();
 	MemoryAgent::SetWorkingSetSize(50, 200);
 	MemoryAgent::GetWorkingSetSize();

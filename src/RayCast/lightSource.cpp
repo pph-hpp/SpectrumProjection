@@ -12,9 +12,7 @@ float* lightSource::u = nullptr;
 float* lightSource::beta = nullptr;
 
 
-lightSource::lightSource()
-{
-}
+lightSource::lightSource(){}
 
 lightSource::lightSource(FPConfig config)
 {

@@ -16,7 +16,6 @@
 #include "test.h"
 #include "../config.h"
 
-
 class mutiEnergyProcess {
 private:
 	std::unordered_map<MaterialType, float> p_materials;
