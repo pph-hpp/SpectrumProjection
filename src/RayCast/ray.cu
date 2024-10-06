@@ -8,7 +8,7 @@
 // use texture memory
 __device__ cudaTextureObject_t imageObj;
 
-void bind_image_texture(float* image, int dim, int dimensions) {
+void bind_image_texture(float* image, int dim, int dimensions, cudaStream_t stream) {
 	if (dimensions < 2 || dimensions > 3)
 	{
 		std::cerr << "CUDA error: dimensions of image error" 
@@ -20,8 +20,15 @@ void bind_image_texture(float* image, int dim, int dimensions) {
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
 	if (dimensions == 2){
 		cudaMallocArray(&cudaArray, &channelDesc, dim, dim);
-		cudaMemcpy2DToArray(cudaArray, 0, 0, image, dim * sizeof(float),
-			dim * sizeof(float), dim, cudaMemcpyHostToDevice);
+		if (stream != nullptr){
+			cudaMemcpy2DToArrayAsync(cudaArray, 0, 0, image, dim * sizeof(float),
+				dim * sizeof(float), dim, cudaMemcpyHostToDevice, stream);
+		}
+		else{
+			cudaMemcpy2DToArray(cudaArray, 0, 0, image, dim * sizeof(float),
+				dim * sizeof(float), dim, cudaMemcpyHostToDevice);
+		}
+		
 	}
 	else if (dimensions == 3){
 		cudaExtent extent = make_cudaExtent(dim, dim, dim);
@@ -33,7 +40,10 @@ void bind_image_texture(float* image, int dim, int dimensions) {
 		copyParams.dstArray = cudaArray;
 		copyParams.extent = extent;
 		copyParams.kind = cudaMemcpyHostToDevice;
-		cudaMemcpy3D(&copyParams);
+		if (stream != nullptr)
+			cudaMemcpy3DAsync(&copyParams, stream);
+		else
+			cudaMemcpy3D(&copyParams);
 	}
 
 	// 绑定 CUDA Array 到纹理对象
@@ -439,10 +449,10 @@ void ForwardProjectionBilinear_Agent(float*& image, float*& sinogram, const floa
 		config.detEltCount, config.detZEltCount, config.views, config.pixelSize, config.sliceThickness, sid, sdd, config.coneBeam, z_element_idx, z_element_idx + 1);*/
 	int dim = config.imgDim;
 	if (!config.coneBeam){
-		bind_image_texture(image + z_element_idx * dim * dim, dim, 2);
+		bind_image_texture(image + z_element_idx * dim * dim, dim, 2, stream);
 	}
 	else{
-		bind_image_texture(image, dim, 3);
+		bind_image_texture(image, dim, 3, stream);
 	}
 	int length = config.detEltCount + config.views;
 	if (stream){

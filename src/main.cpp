@@ -7,7 +7,7 @@
 int main()
 {
 	cudaDeviceProp prop = MemoryAgent::getDeviceProperties();
-	MemoryAgent::SetWorkingSetSize(50, 200);
+	MemoryAgent::SetWorkingSetSize(200, 400);
 	MemoryAgent::GetWorkingSetSize();
 
 	mutiEnergyProjection proj("src/config.jsonc", prop);

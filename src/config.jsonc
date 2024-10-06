@@ -77,7 +77,7 @@
           "InputFilesFilter": "sgm_.*.raw",
           "CoefficientPath": "resource/bone.txt",
           "Density": 1.92,
-          "OutputFileReplace": [ "sgm_", "" ]
+          "OutputFileReplace": [ "b_", "" ]
         },
         "Water":{
           "MaterialType": "Water",

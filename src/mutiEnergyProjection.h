@@ -27,7 +27,7 @@ private:
 	lightSource* m_light_process;
 	mutiEnergyProcess* m_energy_process;
 
-	ProcessType m_process_type = ProcessType::MEProcess;
+	ProcessType m_process_type = ProcessType::ForwardAndMEProcess;
 	Timer timer;
 	int m_num_streams = 0;
 	std::mutex fileMutex;

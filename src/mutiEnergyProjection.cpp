@@ -386,7 +386,7 @@ std::vector<std::string> mutiEnergyProjection::GetInputFileNames(const std::stri
 
 void mutiEnergyProjection::readData(const char* filepath, float* data_cpu, float* data_gpu, int length, cudaStream_t stream) {
 	{
-		//std::lock_guard<std::mutex> lock(fileMutex); // 确保线程安全
+		std::lock_guard<std::mutex> lock(fileMutex); // 确保线程安全
 		std::ifstream file(filepath, std::ios::binary); // 以二进制模式打开文件
 
 		if (!file) {
@@ -414,7 +414,7 @@ void mutiEnergyProjection::readData(const char* filepath, float* data_cpu, float
 void mutiEnergyProjection::writeData(const char* filepath, float* data_gpu, float* data_cpu, int length, cudaStream_t stream)
 {
 	{
-		//std::lock_guard<std::mutex> lock(fileMutex); // 确保线程安全
+		std::lock_guard<std::mutex> lock(fileMutex); // 确保线程安全
 		if (m_use_stream) {
 			CHECK_CUDA_ERROR(cudaMemcpyAsync(data_cpu, data_gpu, sizeof(float) * length, cudaMemcpyDeviceToHost, stream));
 		}
@@ -500,17 +500,17 @@ void mutiEnergyProjection::MallocStaticData() {
 	}
 	else {
 		for (auto material : m_material_list) {
-			img_materials_cpu[material] = new float[m_FPConfig.imgDim * m_FPConfig.imgDim];
-			sgm_materials_cpu[material] = new float[m_FPConfig.detEltCount * m_FPConfig.views];
-			if (!MemoryAgent::LockMemory(sgm_materials_cpu[material], m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams)) {
+			img_materials_cpu[material] = new float[m_FPConfig.imgDim * m_FPConfig.imgDim * m_num_streams];
+			sgm_materials_cpu[material] = new float[m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams];
+			if (MemoryAgent::LockMemory(sgm_materials_cpu[material], m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams)) {
 				exit(-1);
 			}
-			cudaMalloc((void**)&img_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views);
-			cudaMalloc((void**)&sgm_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views);
+			cudaMalloc((void**)&img_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams);
+			cudaMalloc((void**)&sgm_materials[material], sizeof(float) * m_FPConfig.detEltCount * m_FPConfig.views * m_num_streams);
 		}
-		cudaMalloc((void**)&sinogram, sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight);
-		sinogram_cpu = new float[m_MEConfig.sgmWidth * m_MEConfig.sgmHeight];
-		if (!MemoryAgent::LockMemory(sinogram_cpu, m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams)) {
+		cudaMalloc((void**)&sinogram, sizeof(float) * m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams);
+		sinogram_cpu = new float[m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams];
+		if (MemoryAgent::LockMemory(sinogram_cpu, m_MEConfig.sgmWidth * m_MEConfig.sgmHeight * m_num_streams)) {
 			exit(-1);
 		}
 	}
@@ -522,6 +522,7 @@ bool mutiEnergyProjection::do_forward_projection(int img_offset, int sgm_offset,
 		printf("Forward Projection Error, Create lightSource first.\n");
 		return false;
 	}
+	std::cout << "do_forward_projection:" << std::endl;
 	for (auto material : m_material_list){
 		m_light_process->ForwardProjectionBilinear(img_materials[material] + img_offset,
 			sgm_materials[material] + sgm_offset, stream);
