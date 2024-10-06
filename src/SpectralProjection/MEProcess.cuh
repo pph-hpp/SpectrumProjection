@@ -10,7 +10,6 @@
 void phone_count_agent(std::vector<float*>sgm, float* sinogram, float* spectrum, float* material, std::string energy, const int width,
 	const int height, int energyNum, float N, float allSpec, bool noise, cudaStream_t stream);
 
-
 void bind_spectrum_texture(float* spectrum, int m_energy_num, int energy_num);
 
 void bind_coefficient_texture(float* coefficient, int m_energy_num, int material_num);

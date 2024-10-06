@@ -86,6 +86,7 @@ __global__ void InitBeta(float* beta, const int V, const float startAngle, const
 	}
 }
 
+
 // img: image data
 // sgm: sinogram data
 // u: array of each detector element position

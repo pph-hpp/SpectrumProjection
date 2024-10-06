@@ -7,7 +7,6 @@ __device__ cudaTextureObject_t spectrumObj;
 __device__ cudaTextureObject_t coefficientObj;
 
 
-
 void phone_count_agent(std::vector<float*>sgm, float* sinogram, float* spec, float *material, std::string energy, const int width,
 	const int height, int energyNum, float N, float allSpec, bool noise, cudaStream_t stream) {
 	dim3 grid((width + 31) / 32, (height + 15) / 16);
