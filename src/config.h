@@ -7,7 +7,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
-
 enum MaterialType {
 	Bone = 0,
 	Water,
